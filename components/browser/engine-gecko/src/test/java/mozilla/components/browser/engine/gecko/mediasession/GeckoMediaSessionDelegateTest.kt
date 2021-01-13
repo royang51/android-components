@@ -86,7 +86,6 @@ class GeckoMediaSessionDelegateTest {
         assertEquals(observedMetadata?.title, metadata.title)
         assertEquals(observedMetadata?.artist, metadata.artist)
         assertEquals(observedMetadata?.album, metadata.album)
-        assertEquals(observedMetadata?.artwork, metadata.artwork)
     }
 
     @Test

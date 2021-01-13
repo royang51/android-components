@@ -7,14 +7,19 @@ package mozilla.components.feature.media.service
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
+import android.os.Handler
+import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationManagerCompat
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.android.asCoroutineDispatcher
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.launch
 import mozilla.components.browser.state.state.SessionState
 import mozilla.components.browser.state.store.BrowserStore
 import mozilla.components.concept.engine.mediasession.MediaSession
@@ -53,6 +58,9 @@ internal class MediaSessionServiceDelegate(
     }
     private var scope: CoroutineScope? = null
     private var controller: MediaSession.Controller? = null
+
+    @VisibleForTesting
+    internal var notificationDispatcher = getNotificationDispatcher()
 
     fun onCreate() {
         logger.debug("Service created")
@@ -101,7 +109,10 @@ internal class MediaSessionServiceDelegate(
 
     private fun processMediaSessionState(state: SessionState?) {
         if (state == null) {
-            updateNotification(state)
+            CoroutineScope(notificationDispatcher).launch() {
+                updateNotification(state)
+            }
+
             shutdown()
             return
         }
@@ -116,7 +127,13 @@ internal class MediaSessionServiceDelegate(
         }
 
         updateMediaSession(state)
-        updateNotification(state)
+        CoroutineScope(notificationDispatcher).launch() {
+            updateNotification(state)
+        }
+    }
+
+    private fun getNotificationDispatcher(): CoroutineDispatcher {
+        return Handler(Looper.getMainLooper()).asCoroutineDispatcher("MediaSessionServiceDelegateDispatcher")
     }
 
     private fun updateMediaSession(sessionState: SessionState) {
@@ -134,7 +151,7 @@ internal class MediaSessionServiceDelegate(
                 .build())
     }
 
-    private fun updateNotification(sessionState: SessionState?) {
+    private suspend fun updateNotification(sessionState: SessionState?) {
         controller = sessionState?.mediaSessionState?.controller
         val notificationId = SharedIdsHelper.getIdForTag(
             context,

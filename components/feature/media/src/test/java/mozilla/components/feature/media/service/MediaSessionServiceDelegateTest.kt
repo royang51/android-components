@@ -41,6 +41,7 @@ class MediaSessionServiceDelegateTest {
         val service: AbstractMediaSessionService = mock()
         val delegate = MediaSessionServiceDelegate(testContext, service, store)
 
+        delegate.notificationDispatcher = dispatcher
         delegate.onCreate()
 
         verify(service).startForeground(ArgumentMatchers.anyInt(), any())
@@ -60,6 +61,7 @@ class MediaSessionServiceDelegateTest {
         val service: AbstractMediaSessionService = mock()
         val delegate = spy(MediaSessionServiceDelegate(testContext, service, store))
 
+        delegate.notificationDispatcher = dispatcher
         delegate.onCreate()
 
         verify(service).startForeground(ArgumentMatchers.anyInt(), any())
@@ -87,6 +89,7 @@ class MediaSessionServiceDelegateTest {
         val service: AbstractMediaSessionService = mock()
         val delegate = spy(MediaSessionServiceDelegate(testContext, service, store))
 
+        delegate.notificationDispatcher = dispatcher
         delegate.onCreate()
 
         verify(service).startForeground(ArgumentMatchers.anyInt(), any())
@@ -120,7 +123,9 @@ class MediaSessionServiceDelegateTest {
         val service: AbstractMediaSessionService = mock()
         val delegate = spy(MediaSessionServiceDelegate(testContext, service, store))
 
+        delegate.notificationDispatcher = dispatcher
         delegate.onCreate()
+        dispatcher.advanceUntilIdle()
 
         verify(service).startForeground(ArgumentMatchers.anyInt(), any())
         verify(service, never()).stopSelf()
@@ -151,6 +156,7 @@ class MediaSessionServiceDelegateTest {
         val service: AbstractMediaSessionService = mock()
         val delegate = spy(MediaSessionServiceDelegate(testContext, service, store))
 
+        delegate.notificationDispatcher = dispatcher
         delegate.onCreate()
 
         verify(service).startForeground(ArgumentMatchers.anyInt(), any())
@@ -185,7 +191,9 @@ class MediaSessionServiceDelegateTest {
         val delegate = MediaSessionServiceDelegate(testContext, service, store)
         val mediaSessionCallback = MediaSessionCallback(store)
 
+        delegate.notificationDispatcher = dispatcher
         delegate.onCreate()
+        dispatcher.advanceUntilIdle()
 
         verify(service).startForeground(ArgumentMatchers.anyInt(), any())
         verify(service, never()).stopSelf()
@@ -231,7 +239,9 @@ class MediaSessionServiceDelegateTest {
         val delegate = spy(MediaSessionServiceDelegate(testContext, service, store))
         val mediaSessionCallback = MediaSessionCallback(store)
 
+        delegate.notificationDispatcher = dispatcher
         delegate.onCreate()
+        dispatcher.advanceUntilIdle()
 
         verify(service).startForeground(ArgumentMatchers.anyInt(), any())
         verify(service, never()).stopSelf()
@@ -262,7 +272,9 @@ class MediaSessionServiceDelegateTest {
         val service: AbstractMediaSessionService = mock()
         val delegate = spy(MediaSessionServiceDelegate(testContext, service, store))
 
+        delegate.notificationDispatcher = dispatcher
         delegate.onCreate()
+        dispatcher.advanceUntilIdle()
 
         delegate.onDestroy()
         verify(service, never()).stopSelf()
