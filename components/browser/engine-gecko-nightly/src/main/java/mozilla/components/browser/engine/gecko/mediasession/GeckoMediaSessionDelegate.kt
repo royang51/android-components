@@ -5,6 +5,7 @@
 package mozilla.components.browser.engine.gecko.mediasession
 
 import android.graphics.Bitmap
+import android.util.Log
 import mozilla.components.browser.engine.gecko.GeckoEngineSession
 import mozilla.components.browser.engine.gecko.await
 import mozilla.components.concept.engine.mediasession.MediaSession
@@ -32,6 +33,7 @@ internal class GeckoMediaSessionDelegate(
         mediaSession: GeckoViewMediaSession,
         metaData: GeckoViewMediaSession.Metadata
     ) {
+        Log.d("ROGER", "thread id" + android.os.Process.getThreadPriority(android.os.Process.myTid()))
         val getArtwork: (suspend (Int) -> Bitmap?)? = metaData.artwork?.let {
             { size -> it.getBitmap(size).await() }
         }

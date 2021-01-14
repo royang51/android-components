@@ -11,6 +11,7 @@ import android.os.Handler
 import android.os.Looper
 import android.support.v4.media.MediaMetadataCompat
 import android.support.v4.media.session.MediaSessionCompat
+import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationManagerCompat
 import kotlinx.coroutines.CoroutineDispatcher
@@ -108,10 +109,9 @@ internal class MediaSessionServiceDelegate(
     }
 
     private fun processMediaSessionState(state: SessionState?) {
+        Log.d("ROGER", "thread id" + android.os.Process.getThreadPriority(android.os.Process.myTid()))
         if (state == null) {
-            CoroutineScope(notificationDispatcher).launch() {
-                updateNotification(state)
-            }
+            updateNotification(state)
 
             shutdown()
             return
@@ -127,9 +127,7 @@ internal class MediaSessionServiceDelegate(
         }
 
         updateMediaSession(state)
-        CoroutineScope(notificationDispatcher).launch() {
-            updateNotification(state)
-        }
+        updateNotification(state)
     }
 
     private fun getNotificationDispatcher(): CoroutineDispatcher {
@@ -151,7 +149,7 @@ internal class MediaSessionServiceDelegate(
                 .build())
     }
 
-    private suspend fun updateNotification(sessionState: SessionState?) {
+    private fun updateNotification(sessionState: SessionState?) {
         controller = sessionState?.mediaSessionState?.controller
         val notificationId = SharedIdsHelper.getIdForTag(
             context,

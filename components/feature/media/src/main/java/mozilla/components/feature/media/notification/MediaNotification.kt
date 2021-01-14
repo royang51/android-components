@@ -10,9 +10,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.os.Build
 import android.support.v4.media.session.MediaSessionCompat
+import android.util.Log
 import androidx.annotation.DrawableRes
 import androidx.core.app.NotificationCompat
 import androidx.media.app.NotificationCompat.MediaStyle
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withTimeoutOrNull
 import mozilla.components.browser.state.state.BrowserState
 import mozilla.components.browser.state.state.CustomTabSessionState
@@ -54,7 +59,8 @@ internal class MediaNotification(
     /**
      * Creates a new [Notification] for the given [sessionState].
      */
-    suspend fun create(sessionState: SessionState?, mediaSessionCompat: MediaSessionCompat): Notification {
+    fun create(sessionState: SessionState?, mediaSessionCompat: MediaSessionCompat): Notification {
+        Log.d("ROGER", "thread id" + android.os.Process.getThreadPriority(android.os.Process.myTid()))
         val data = sessionState?.toNotificationData(context, cls) ?: NotificationData()
 
         return buildNotification(data, mediaSessionCompat, sessionState !is CustomTabSessionState)
@@ -160,15 +166,18 @@ private fun BrowserState.toNotificationData(
     }
 }
 
-private suspend fun SessionState.toNotificationData(
+private fun SessionState.toNotificationData(
     context: Context,
     cls: Class<*>
 ): NotificationData {
     val intent = context.packageManager.getLaunchIntentForPackage(context.packageName)?.also {
         it.action = AbstractMediaSessionService.ACTION_SWITCH_TAB
     }
-    val artwork = withTimeoutOrNull(ARTWORK_RETRIEVE_TIMEOUT) {
-        mediaSessionState?.metadata?.getArtwork?.invoke(ARTWORK_IMAGE_SIZE)
+
+    val artwork = runBlocking {
+        withTimeoutOrNull(ARTWORK_RETRIEVE_TIMEOUT) {
+            mediaSessionState?.metadata?.getArtwork?.invoke(ARTWORK_IMAGE_SIZE)
+        }
     }
 
     return when (mediaSessionState?.playbackState) {
